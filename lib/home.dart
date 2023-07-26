@@ -29,7 +29,7 @@ class _HomeState extends State<Home> {
   }
 
   /// Each time to start a speech recognition session
-  void startListening() async {
+  Future<void> startListening() async {
     bool isAvailable = await speechToText.initialize();
     if (isAvailable) {
       await speechToText.listen(
@@ -43,7 +43,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  void stopListening() async {
+  Future<void> stopListening() async {
     await speechToText.stop();
   }
 
@@ -142,13 +142,13 @@ class _HomeState extends State<Home> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           if (await speechToText.hasPermission && speechToText.isNotListening) {
-            startListening();
+            await startListening();
           } else if (speechToText.isListening) {
-            stopListening();
+            openAI_service().isImgPrompt(lastWords);
+            await stopListening();
           } else {
-            initSpeechToText();
+            await initSpeechToText();
           }
-          openAI_service().isImgPrompt();
         },
         child: Icon(Icons.mic),
         enableFeedback: true,
