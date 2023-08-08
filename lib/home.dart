@@ -1,7 +1,8 @@
 import 'dart:convert';
-
+import 'package:http/http.dart' as http;
 import 'package:botai/openAI_service.dart';
 import 'package:botai/pallete.dart';
+import 'package:botai/secrets.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'featurebox.dart';
@@ -14,9 +15,45 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  @override
   final speechToText = SpeechToText();
+  //final String prompt="what is 2+3";
+
+// Future<String> chatGPTAPI() async {
+//   try {
+//     http.Response res = await http.post(
+//       Uri.parse('https://api.openai.com/v1/chat/completions'),
+//       headers: {
+//         "Content-Type": "application/json",
+//         "Authorization": "Bearer $openAiApiKey"
+//       },
+//       body: jsonEncode({
+//         "model": "gpt-3.5-turbo",
+//         "messages": [
+//           {
+//             "role": "user",
+//             "content": "what is 2+3"
+//           }
+//         ],
+//         "temperature": 0.7
+//       }),
+//     );
+
+//     String content = jsonDecode(res.body)['choices'][0]['message']['content'];
+//     content = content.trim();
+//     print(content);
+//     return content;
+//   } catch (e) {
+//     print("Error occurred:");
+//     print(e.toString());
+//     return e.toString();
+//   }
+// }
+
   String lastWords = '';
+  String? generatedContent;
+  String? generatedUrl;
+  TextEditingController searchController=new TextEditingController();
+  
   @override
   void initState() {
     super.initState();
@@ -33,7 +70,7 @@ class _HomeState extends State<Home> {
     bool isAvailable = await speechToText.initialize();
     if (isAvailable) {
       await speechToText.listen(
-          listenFor: Duration(seconds: 10),
+          //listenFor: Duration(seconds: 10),
           onResult: (result) {
             setState(() {
               lastWords = result.recognizedWords;
@@ -64,6 +101,57 @@ class _HomeState extends State<Home> {
         ),
         leading: const Icon(Icons.menu),
       ),
+  //     floatingActionButton:FloatingActionButton( //Floating action button on Scaffold
+  //     onPressed: (){
+  //         //code to execute on button press
+  //     },
+  //     child: Icon(Icons.send), //icon inside button
+  // ),
+
+  // floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+  // //floating action button position to right
+
+  // bottomNavigationBar: BottomAppBar( //bottom navigation bar on scaffold
+  //   color:Colors.transparent,
+  //   shape: CircularNotchedRectangle(), //shape of notch
+  //   notchMargin: 5, //notche margin between floating button and bottom appbar
+  //   child: Container(
+  //               margin: EdgeInsets.all(10),
+  //               decoration: BoxDecoration(
+  //                 borderRadius: BorderRadius.circular(24),
+  //                 color: Colors.greenAccent,
+  //               ),
+  //               child: Row(
+  //                 children: [
+  //                   GestureDetector(
+  //                       onTap: () {
+  //                         print(searchController.text);
+  //                         /* Navigator.push(
+  //                             context,
+  //                             MaterialPageRoute(
+  //                                 builder: (context) => Loading(),
+  //                                 settings: RouteSettings(
+  //                                     arguments: {searchController.text})));
+  //                       }*/
+  //                       },
+  //                       child: Padding(
+  //                         padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+  //                         child: Icon(Icons.search),
+  //                       )),
+  //                   Expanded(
+  //                     child: TextField(
+  //                       controller: searchController,
+  //                       obscureText: false,
+  //                       decoration: InputDecoration(
+  //                         border: InputBorder.none,
+  //                         hintText: "Search ",
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  // ),
       body: SingleChildScrollView(
         child: Column(children: [
           Stack(children: [
@@ -92,7 +180,7 @@ class _HomeState extends State<Home> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                "Good Morning, what task can i do for you?",
+                generatedContent==null ? "Good Morning, what task can i do for you?":generatedContent.toString(),
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -107,6 +195,10 @@ class _HomeState extends State<Home> {
                     bottomLeft: Radius.circular(13),
                     bottomRight: Radius.circular(13))),
           ),
+
+          Container(margin: EdgeInsets.all(20),child: generatedUrl==null? Text(""):Stack(children: [CircularProgressIndicator(),Image.network(generatedUrl.toString())]),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),),
+
           Container(
               margin: EdgeInsets.all(10),
               alignment: Alignment.centerLeft,
@@ -144,11 +236,19 @@ class _HomeState extends State<Home> {
           if (await speechToText.hasPermission && speechToText.isNotListening) {
             await startListening();
           } else if (speechToText.isListening) {
-            openAI_service().isImgPrompt(lastWords);
+            final speech = await openAI_service().isImgPrompt(lastWords);
+            if(speech.contains('https')){
+              generatedUrl=speech;
+            }else{generatedContent=speech;}
+            print(speech);
             await stopListening();
+            setState(() {
+              
+            });
           } else {
             await initSpeechToText();
           }
+  
         },
         child: Icon(Icons.mic),
         enableFeedback: true,
