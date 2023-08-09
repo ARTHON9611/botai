@@ -5,7 +5,9 @@ import 'package:botai/pallete.dart';
 import 'package:botai/secrets.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:flutter/animation.dart';
 import 'featurebox.dart';
+import 'chat_screen.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -53,6 +55,8 @@ class _HomeState extends State<Home> {
   String? generatedContent;
   String? generatedUrl;
   TextEditingController searchController=new TextEditingController();
+  int currentTab=0;
+  chatScreen chattingScreen = new chatScreen();
   
   @override
   void initState() {
@@ -75,7 +79,9 @@ class _HomeState extends State<Home> {
             setState(() {
               lastWords = result.recognizedWords;
               print(jsonEncode(lastWords));
+                            
             });
+            
           });
     }
   }
@@ -108,8 +114,77 @@ class _HomeState extends State<Home> {
   //     child: Icon(Icons.send), //icon inside button
   // ),
 
-  // floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-  // //floating action button position to right
+  //floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+  //floating action button position to right
+
+
+  // bottomNavigationBar: BottomAppBar(
+  //   shape: const CircularNotchedRectangle(),
+  //   notchMargin: 10,
+  //   child: SizedBox(
+  //     height: 60,
+  //     child: Row(
+  //       mainAxisSize: MainAxisSize.max,
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: <Widget>[
+  //         Row(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [Text("Lenden")],
+  //         ),
+          
+  //         Row(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Material(
+  //               child: Center(
+  //                 child: InkWell(
+  //                     focusColor: Colors.transparent,
+  //                     hoverColor: Colors.transparent,
+  //                     highlightColor: Colors.transparent,
+  //                     onTap: () {
+  //                       setState(() {
+  //                         currentTab = 2;
+  //                       });
+  //                     },
+  //                     child: Column(
+  //                       mainAxisAlignment: MainAxisAlignment.center,
+  //                       children: [
+  //                         Icon(Icons.checklist_outlined),
+  //                         Text("Completed"),
+  //                         //const Padding(padding: EdgeInsets.only(right: 10))
+  //                       ],
+  //                     )),
+  //               ),
+  //             ),
+  //             Material(
+  //               child: Center(
+  //                 child: InkWell(
+  //                   focusColor: Colors.transparent,
+  //                   hoverColor: Colors.transparent,
+  //                   highlightColor: Colors.transparent,
+  //                   onTap: () {
+  //                     setState(() {
+  //                       currentTab = 3;
+  //                     });
+  //                   },
+  //                   child: Column(
+  //                     mainAxisAlignment: MainAxisAlignment.center,
+  //                     children: [
+  //                       Icon(Icons.person),
+  //                       Text("Profile")
+  //                       //const Padding(padding: EdgeInsets.only(left: 10))
+  //                     ],
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ],
+  //     ),
+  //   ),
+  // ),
 
   // bottomNavigationBar: BottomAppBar( //bottom navigation bar on scaffold
   //   color:Colors.transparent,
@@ -180,7 +255,7 @@ class _HomeState extends State<Home> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                generatedContent==null ? "Good Morning, what task can i do for you?":generatedContent.toString(),
+                generatedContent==null ? "Good Morning, what task can i do for you?": generatedContent.toString(),
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
