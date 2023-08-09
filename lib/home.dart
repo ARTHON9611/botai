@@ -1,4 +1,8 @@
 import 'dart:convert';
+import 'package:botai/dalle_screen.dart';
+import 'package:botai/lexica_api.dart';
+import 'package:botai/model.dart';
+import 'package:botai/sideMenuBar.dart';
 import 'package:http/http.dart' as http;
 import 'package:botai/openAI_service.dart';
 import 'package:botai/pallete.dart';
@@ -17,6 +21,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+   GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
   final speechToText = SpeechToText();
   //final String prompt="what is 2+3";
 
@@ -56,7 +61,8 @@ class _HomeState extends State<Home> {
   String? generatedUrl;
   TextEditingController searchController=new TextEditingController();
   int currentTab=0;
-  chatScreen chattingScreen = new chatScreen();
+  List messages=[];
+  //chatScreen chattingScreen = new chatScreen();
   
   @override
   void initState() {
@@ -79,7 +85,7 @@ class _HomeState extends State<Home> {
             setState(() {
               lastWords = result.recognizedWords;
               print(jsonEncode(lastWords));
-                            
+              
             });
             
           });
@@ -105,8 +111,11 @@ class _HomeState extends State<Home> {
           "botAI",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        leading: const Icon(Icons.menu),
+        leading: InkWell(onTap: (){_drawerKey.currentState!.openDrawer();},child: const Icon(Icons.menu)),
       ),
+      key: _drawerKey,
+      endDrawerEnableOpenDragGesture: true,
+      drawer: sideMenu(),
   //     floatingActionButton:FloatingActionButton( //Floating action button on Scaffold
   //     onPressed: (){
   //         //code to execute on button press
@@ -286,22 +295,33 @@ class _HomeState extends State<Home> {
                       color: Colors.black.withOpacity(0.9)))),
           Column(
             children: [
-              featurebox(
-                  'ChatGPT',
-                  'A smarter way to stay organised and informed with ChatGPT',
-                  'first'),
+              InkWell(
+                onTap: (){
+                  Navigator.push(context,MaterialPageRoute(builder: (context)=>chatScreen(messages: messages,)));
+                },
+                child: featurebox(
+                    'ChatGPT',
+                    'A smarter way to stay organised and informed with ChatGPT',
+                    'first'),
+              ),
               SizedBox(
                 height: 20,
               ),
-              featurebox(
-                  'DALL-E',
-                  'Get inspired and stay creative with your personal assistant powered by DALL-E',
-                  'second'),
+              InkWell(
+                onTap: (){Navigator.push(context,MaterialPageRoute(builder:(context)=>lexicaImg()));},
+                child: featurebox(
+                    'Lexica-Art',
+                    'Get inspired and stay creative with your Favourite image search Lexica-Art with GPT-3.5 Turbo',
+                    'second'),
+              ),
               SizedBox(height: 20),
-              featurebox(
-                  'Smart Voice Assistant',
-                  'Get the best of both worlds with a voice assistant powered by ChatGPT and DALL-E',
-                  'third')
+              InkWell(
+                onTap: () => Navigator.push(context,MaterialPageRoute(builder:(context)=>dalleImg())),
+                child: featurebox(
+                    'Dalle-2',
+                    'Get inspired and stay creative with your personal AI image creator powered by Dalle-2',
+                    'third'),
+              )
             ],
           )
         ]),
@@ -312,6 +332,7 @@ class _HomeState extends State<Home> {
             await startListening();
           } else if (speechToText.isListening) {
             final speech = await openAI_service().isImgPrompt(lastWords);
+            messages!.add({'user':lastWords,'assistant':speech});
             if(speech.contains('https')){
               generatedUrl=speech;
             }else{generatedContent=speech;}
