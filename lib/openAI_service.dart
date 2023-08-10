@@ -56,6 +56,10 @@ class openAI_service {
   }
 
 Future<String> chatGPTAPI(String prompt) async {
+    messages.add({
+            "role": "user",
+            "content": prompt
+          });
   try {
     http.Response res = await http.post(
       Uri.parse('https://api.openai.com/v1/chat/completions'),
@@ -72,7 +76,7 @@ Future<String> chatGPTAPI(String prompt) async {
           },
           {
             "role": "assistant",
-            "content": "You are a personal assistant always there for your user and keeps trying to not to desatisfy him/her"
+            "content": "You're having a conversation with your friendly AI assistant. Treat the assistant as if it's a helpful friend. Feel free to ask questions, share stories, or discuss any topic you'd like. The assistant is here to engage with you in a natural and conversational way."
           }
         ],
         "temperature": 0.7
@@ -81,6 +85,10 @@ Future<String> chatGPTAPI(String prompt) async {
 
     String content = jsonDecode(res.body)['choices'][0]['message']['content'];
     content = content.trim();
+    messages.add({
+            "role": "assistant",
+            "content": content});
+  
     print(content);
     return content;
   }catch (e) {
